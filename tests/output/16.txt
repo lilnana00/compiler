@@ -1,0 +1,8 @@
+1 1 Operation sign + +
+1 2 Identifier str str
+1 5 Delimiter ; ;
+1 6 String qqq 'qqq'
+2 1 Keyword div div
+2 4 Operation sign - -
+2 5 Identifier int int
+2 8 EOF EOF EOF

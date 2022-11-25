@@ -1,0 +1,4 @@
+1 1 String big
+string 'big
+string'
+1 14 EOF EOF EOF

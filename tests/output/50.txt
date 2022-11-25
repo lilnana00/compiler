@@ -1,0 +1,3 @@
+(1, 8): Unexpected lexem.. 8 Real -1 .
+1 9 Integer 123 123
+1 12 EOF EOF EOF

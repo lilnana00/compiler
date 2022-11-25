@@ -1,0 +1,2 @@
+1 1 String string 'string'
+1 9 EOF EOF EOF
