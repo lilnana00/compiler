@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "J8qWXVpm5WKbzJ80mrXVmkSbycnKRk4gdlNTM5fDEFHyFygwdhvFdyuNIFjBUqlO1gF6wtfuN1CyrW6gvOGX2Q==",
+  "dgSpecHash": "bOv4Y3bVsDyJjlTzv7JBbm8jDSjuq+bf86tbRMTllbOrJHVY4vwM3tLpkolMiUxW1zEhAA1kIZe+ZJWAn+93Cw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\user\\source\\repos\\compiler1\\compiler1.csproj",
+  "projectFilePath": "C:\\Users\\user\\Documents\\GitHub\\pascalCompiler\\compiler1.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\user\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\3.1.25\\microsoft.netcore.app.host.win-x64.3.1.25.nupkg.sha512"
   ],

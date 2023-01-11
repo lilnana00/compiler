@@ -15,11 +15,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\user\\source\\repos\\compiler1\\compiler1.csproj",
+      "projectUniqueName": "C:\\Users\\user\\Documents\\GitHub\\pascalCompiler\\compiler1.csproj",
       "projectName": "compiler1",
-      "projectPath": "C:\\Users\\user\\source\\repos\\compiler1\\compiler1.csproj",
+      "projectPath": "C:\\Users\\user\\Documents\\GitHub\\pascalCompiler\\compiler1.csproj",
       "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\user\\source\\repos\\compiler1\\obj\\",
+      "outputPath": "C:\\Users\\user\\Documents\\GitHub\\pascalCompiler\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",

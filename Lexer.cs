@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Collections.Generic;
+
 
 
 public class Lexer
@@ -167,7 +169,7 @@ public class Lexer
                 if (currentChar == -1)
                 {
                     charCount += buffer.Length - 1;
-                    errorMessage = string.Format("({0}, {1}): String error: missing closing quote.", lineCount, charCount);
+                    errorMessage = string.Format("({0}, {1}): Missing closing quote.", lineCount, charCount);
                     return false;
                 }
             }
@@ -395,5 +397,101 @@ public class Lexer
         int state = GetLexemState();
         if (state == (int)States.error) return new string[1] { errorMessage };
         return new string[5] { lineCount.ToString(), GetCharInd().ToString(), GetLexemType(state), GetLexemValue(state), buffer};
+    }
+
+    private List<int> GetInflectionPoint(List<string> expr)
+    {
+        int braces = 0;
+        int maxPriority = int.MaxValue, index = 0;
+        string signsStr = "+-*/";
+        Dictionary<string, int> priority = new Dictionary<string, int>()
+        {
+            { "+", 1 },
+            { "-", 1 },
+            { "*", 2 },
+            { "/", 2 }
+        };
+        for (int i = 0; i < expr.Count; i++)
+        {
+            if (expr[i] == "(") braces++;
+            else if (expr[i] == ")") braces--;
+            else if (signsStr.Contains(expr[i]))
+            {
+                if (priority[expr[i]] + 2 * braces <= maxPriority)
+                {
+                    maxPriority = priority[expr[i]] + 2 * braces;
+                    index = i;
+                }
+            }
+        }
+        int extraBraces = (maxPriority - 1) / 2;
+        return new List<int>() { index, extraBraces };
+    }
+
+    private string GetSimpleExpression(List<string> expr, int depth)
+    {
+        string ans = "";
+        for (int i = 0; i < depth; i++) ans += "\t";
+        if (expr.Count == 1) return ans + expr[0];
+        List<int> infl = GetInflectionPoint(expr);
+        if (infl[0] == 0) return ans + expr[expr.Count / 2];
+        List<string> leftExpr = new List<string>(), rightExpr = new List<string>();
+        leftExpr.AddRange(expr.GetRange(infl[1], infl[0] - infl[1]));
+        rightExpr.AddRange(expr.GetRange(infl[0] + 1, expr.Count - 1 - infl[0] - infl[1]));
+        ans += expr[infl[0]] + "\n\n" + GetSimpleExpression(leftExpr, depth + 1) + "\n\n" + GetSimpleExpression(rightExpr, depth + 1);
+        return ans;
+    }
+
+    public string GetSimpleExpression()
+    {
+        int openBraces = 0;
+        List<string> expression = new List<string>();
+        bool isSignOpen = true;
+        while (true)
+        {
+            int state = GetLexemState();
+            if (state == (int)States.end_of_file) break;
+            if (state == (int)States.error) return errorMessage;
+            string lexem = GetLexemValue(state);
+            if (state == (int)States.integer || state == (int)States.real || state == (int)States.identifier ||
+                lexem == "+" || lexem == "-" || lexem == "*" || lexem == "/" || lexem == "(" || lexem == ")")
+            {
+                expression.Add(lexem);
+            }
+            else
+            {
+                errorMessage = string.Format("({0}, {1}): Wrong lexem for simple expressions.", lineCount, charCount);
+                return errorMessage;
+            }
+
+            if (lexem == "+" || lexem == "-" || lexem == "*" || lexem == "/")
+            {
+                if (isSignOpen)
+                {
+                    errorMessage = string.Format("({0}, {1}): The expression doesn't have a left term.", lineCount, charCount);
+                    return errorMessage;
+                }
+                isSignOpen = true;
+            }
+            else if (lexem == "(")
+            {
+                openBraces++;
+                isSignOpen = true;
+            }
+            else if (lexem == ")")
+            {
+                openBraces--;
+                isSignOpen = false;
+            }
+            else isSignOpen = false;
+        }
+        if (isSignOpen)
+            errorMessage = string.Format("({0}, {1}): The expression doesn't have a right term.", lineCount, charCount);
+        if (openBraces > 0)
+            errorMessage = string.Format("({0}, {1}): The expression has unclosed braces.", lineCount, charCount);
+        if (openBraces < 0)
+            errorMessage = string.Format("({0}, {1}): The expression has extra closing braces.", lineCount, charCount);
+        if (errorMessage != "") return errorMessage;
+        return GetSimpleExpression(expression, 0);
     }
 }

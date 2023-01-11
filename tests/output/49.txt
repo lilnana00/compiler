@@ -1,2 +1,0 @@
-(1, 1): Overflow in string to real conversion.F EOF EOF
-1 43 EOF EOF EOF
