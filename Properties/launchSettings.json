@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "compiler1": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\user\\Documents\\GitHub\\pascalCompiler\\customtest.txt -se"
+    }
+  }
+}

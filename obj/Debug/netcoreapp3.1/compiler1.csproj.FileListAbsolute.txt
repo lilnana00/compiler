@@ -12,3 +12,17 @@ C:\Users\user\source\repos\compiler1\obj\Debug\netcoreapp3.1\compiler1.csproj.Co
 C:\Users\user\source\repos\compiler1\obj\Debug\netcoreapp3.1\compiler1.dll
 C:\Users\user\source\repos\compiler1\obj\Debug\netcoreapp3.1\compiler1.pdb
 C:\Users\user\source\repos\compiler1\obj\Debug\netcoreapp3.1\compiler1.genruntimeconfig.cache
+C:\Users\user\Documents\GitHub\pascalCompiler\bin\Debug\netcoreapp3.1\compiler1.exe
+C:\Users\user\Documents\GitHub\pascalCompiler\bin\Debug\netcoreapp3.1\compiler1.deps.json
+C:\Users\user\Documents\GitHub\pascalCompiler\bin\Debug\netcoreapp3.1\compiler1.runtimeconfig.json
+C:\Users\user\Documents\GitHub\pascalCompiler\bin\Debug\netcoreapp3.1\compiler1.runtimeconfig.dev.json
+C:\Users\user\Documents\GitHub\pascalCompiler\bin\Debug\netcoreapp3.1\compiler1.dll
+C:\Users\user\Documents\GitHub\pascalCompiler\bin\Debug\netcoreapp3.1\compiler1.pdb
+C:\Users\user\Documents\GitHub\pascalCompiler\obj\Debug\netcoreapp3.1\compiler1.csproj.AssemblyReference.cache
+C:\Users\user\Documents\GitHub\pascalCompiler\obj\Debug\netcoreapp3.1\compiler1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\user\Documents\GitHub\pascalCompiler\obj\Debug\netcoreapp3.1\compiler1.AssemblyInfoInputs.cache
+C:\Users\user\Documents\GitHub\pascalCompiler\obj\Debug\netcoreapp3.1\compiler1.AssemblyInfo.cs
+C:\Users\user\Documents\GitHub\pascalCompiler\obj\Debug\netcoreapp3.1\compiler1.csproj.CoreCompileInputs.cache
+C:\Users\user\Documents\GitHub\pascalCompiler\obj\Debug\netcoreapp3.1\compiler1.dll
+C:\Users\user\Documents\GitHub\pascalCompiler\obj\Debug\netcoreapp3.1\compiler1.pdb
+C:\Users\user\Documents\GitHub\pascalCompiler\obj\Debug\netcoreapp3.1\compiler1.genruntimeconfig.cache

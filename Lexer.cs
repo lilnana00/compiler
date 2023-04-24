@@ -12,29 +12,35 @@ public class Lexer
         stream = File.OpenText(file);
     }
 
+
     char[] delimiters = { ':', ';', ',', '(', ')', '[', ']'};
     char[] operartion_signs = { '+', '-', '*', '/', '=', '@', '^', '>', '<'};
-    string[] keywords = {"abs", "absolute", "and", "arctan", "array", "as", "asm", "begin", "boolean", "break",
+    string[] keywords = {"abs", "absolute", "arctan", "array", "as", "asm", "begin", "boolean", "break",
         "case", "char", "class", "const", "constructor", "continue", "cos", "destructor", "dispose", "div", "do", "downto",
         "else", "end", "eof", "eoln", "except", "exp", "exports", "false", "file", "finalization","finally", "for", "function",
         "goto", "if", "implementation", "in", "inherited", "initialization", "inline", "input", "integer", "interface", "is",
-        "label", "library", "ln", "maxint", "mod", "new", "nil", "not", "object", "odd", "of", "on", "operator", "or", "ord",
+        "label", "library", "ln", "maxint", "mod", "new", "nil", "object", "odd", "of", "on", "operator", "ord",
         "output", "pack", "packed", "page", "pred", "procedure", "program", "property", "raise", "read", "readln", "real",
         "record", "reintroduce", "repeat", "reset", "rewrite", "round", "self", "set", "shl", "shr", "sin", "sqr", "sqrt",
         "string", "succ", "text", "then", "threadvar", "to", "true", "trunc", "try", "type", "unit", "until", "uses", "var",
-        "while", "with", "write", "writelnxor", "xor"};
+        "while", "with", "write", "writelnxor"};
+    string[] operation_logic = { "or", "and", "xor", "not" };
 
-    enum States
+    string hex_letters = "ABCDEFabcdef";
+    string oct_digits = "01234567";
+
+    public enum States
     {
-        error = -1,
-        end_of_file = 0,
-        delimiter = 1,
-        operation_sign = 2,
-        keyword = 3,
-        identifier = 4,
-        str = 5,
-        integer = 6,
-        real = 7,
+        error,
+        end_of_file,
+        delimiter,
+        operation_sign,
+        operation_logic,
+        keyword,
+        identifier,
+        str,
+        integer,
+        real,
     };
 
     StreamReader stream;
@@ -66,51 +72,55 @@ public class Lexer
         while (currentChar != -1 && char.IsWhiteSpace((char)currentChar));
     }
 
-    public string GetLexemType(int state)
+    public string GetLexemType(States state)
     {
         switch(state)
         { 
-            case (int)States.end_of_file:
+            case States.end_of_file:
                 return "EOF";
-            case (int)States.delimiter:
+            case States.delimiter:
                 return "Delimiter";
-            case (int)States.operation_sign:
+            case States.operation_sign:
                 return "Operation sign";
-            case (int)States.keyword:
+            case States.operation_logic:
+                return "Logic operation";
+            case States.keyword:
                 return "Keyword";
-            case (int)States.identifier:
+            case States.identifier:
                 return "Identifier";
-            case (int)States.str:
+            case States.str:
                 return "String";
-            case (int)States.integer:
+            case States.integer:
                 return "Integer";
-            case (int)States.real:
+            case States.real:
                 return "Real";
             default:
                 return "Error";
         }
     }
 
-    public string GetLexemValue(int state)
+    public string GetLexemValue(States state)
     {
         switch (state)
         {
-            case (int)States.end_of_file:
+            case States.end_of_file:
                 buffer = "EOF";
                 return buffer;
-            case (int)States.delimiter:
+            case States.delimiter:
                 return buffer;
-            case (int)States.operation_sign:
+            case States.operation_sign:
                 return buffer;
-            case (int)States.keyword:
+            case States.keyword:
                 return buffer.ToLower();
-            case (int)States.identifier:
+            case States.operation_logic:
+                return buffer.ToLower();
+            case States.identifier:
                 return buffer;
-            case (int)States.str:
+            case States.str:
                 return buffer.Substring(1, buffer.Length - 2);
-            case (int)States.integer:
+            case States.integer:
                 return valueInt.ToString();
-            case (int)States.real:
+            case States.real:
                 return valueReal.ToString().Replace(',', '.');
             default:
                 return "Error";
@@ -158,13 +168,24 @@ public class Lexer
         }
         return false;
     }
+    public bool IsLogical(string str)
+    {
+        foreach (string s in operation_logic)
+        {
+            if (str.ToLower().Equals(s)) return true;
+        }
+        return false;
+    }
 
     private bool IsString()
     {
         if (currentChar.Equals('\''))
         {
-            while (!(currentChar = stream.Read()).Equals('\''))
+            currentChar = stream.Read();
+            buffer += (char)currentChar;
+            while (!currentChar.Equals('\''))
             {
+                currentChar = stream.Read();
                 buffer += (char)currentChar;
                 if (currentChar == -1)
                 {
@@ -173,7 +194,6 @@ public class Lexer
                     return false;
                 }
             }
-            buffer += (char)currentChar;
             charCount += buffer.Length - 1;
             return true;
         }
@@ -184,16 +204,17 @@ public class Lexer
     {
         if (currentChar.Equals('%'))
         {
-            while (char.IsLetterOrDigit((char)stream.Peek()))
+            while (stream.Peek().Equals('0') || stream.Peek().Equals('1'))
             {
                 currentChar = stream.Read();
                 buffer += (char)currentChar;
             }
+
             try { valueInt = Convert.ToInt32(buffer.Remove(0, 1), 2); }
-            catch (FormatException)
+            /*catch (FormatException)
             {
                 errorMessage = string.Format("({0}, {1}): The number does not match the binary notation.", lineCount, charCount);
-            }
+            }*/
             catch (OverflowException)
             {
                 errorMessage = string.Format("({0}, {1}): Overflow in string to int conversion.", lineCount, charCount);
@@ -207,16 +228,16 @@ public class Lexer
     {
         if (currentChar.Equals('&'))
         {
-            while (char.IsLetterOrDigit((char)stream.Peek()))
+            while (oct_digits.Contains((char)stream.Peek()))
             {
                 currentChar = stream.Read();
                 buffer += (char)currentChar;
             }
             try { valueInt = Convert.ToInt32(buffer.Remove(0, 1), 8); }
-            catch (FormatException)
+            /*catch (FormatException)
             {
                 errorMessage = string.Format("({0}, {1}): The number does not match the octal notation.", lineCount, charCount);
-            }
+            }*/
             catch (OverflowException)
             {
                 errorMessage = string.Format("({0}, {1}): Overflow in string to int conversion.", lineCount, charCount);
@@ -231,7 +252,7 @@ public class Lexer
         if (char.IsDigit((char)currentChar))
         {
             bool isReal = false;
-            while (char.IsLetterOrDigit((char)stream.Peek()) || stream.Peek() == '.')
+            while (char.IsDigit((char)stream.Peek()) || stream.Peek() == '.')
             {
                 currentChar = stream.Read();
                 buffer += (char)currentChar;
@@ -262,37 +283,32 @@ public class Lexer
 
     private void ReadReal()
     {
-        while (char.IsLetterOrDigit((char)stream.Peek()))
+        while (char.IsDigit((char)stream.Peek()))
         {
             currentChar = stream.Read();
             buffer += (char)currentChar;
-            if(currentChar == 'e' || currentChar == 'E')
-            {
-                currentChar = stream.Read();
-                buffer += (char)currentChar;
-            }
         }
         try
         {
             valueReal = Convert.ToDouble(buffer, CultureInfo.InvariantCulture);
         }
-        catch (FormatException)
+        /*catch (FormatException)
         {
             errorMessage = string.Format("({0}, {1}): The number does not match the real notation.", lineCount, charCount);
-        }
+        }*/
         catch (OverflowException)
         {
             errorMessage = string.Format("({0}, {1}): Overflow in string to real conversion.", lineCount, charCount);
         }
         if(double.IsNaN(valueReal) || double.IsInfinity(valueReal))
-            errorMessage = string.Format("({0}, {1}): Overflow in string to real conversion.", lineCount, charCount);
+            errorMessage = string.Format("({0}, {1}): NaN or Infinity.", lineCount, charCount);
         charCount += buffer.Length - 1;
     }
     private bool IsHexInt()
     {
         if (currentChar.Equals('$'))
         {
-            while (char.IsLetterOrDigit((char)stream.Peek()))
+            while (char.IsDigit((char)stream.Peek()) || hex_letters.Contains((char)stream.Peek()))
             {
                 currentChar = stream.Read();
                 buffer += (char)currentChar;
@@ -332,8 +348,10 @@ public class Lexer
     {
         if (currentChar.Equals('{'))
         {
-            while (!(currentChar = stream.Read()).Equals('}'))
+
+            while (!currentChar.Equals('}'))
             {
+                currentChar = stream.Read();
                 charCount++;
                 if (currentChar.Equals('\n'))
                 {
@@ -342,15 +360,14 @@ public class Lexer
                 }
                 if (currentChar == -1) return true;
             }
-            charCount++;
             return true;
         }
         return false;
     }
 
-    public int GetLexemState()
+    public States GetLexemState()
     {
-        if (currentChar == -1) return (int)States.end_of_file;
+        if (currentChar == -1) return States.end_of_file;
         
         buffer = "";
         valueInt = -1;
@@ -358,58 +375,61 @@ public class Lexer
 
         NextLexem();
 
-        if (currentChar == -1) return (int)States.end_of_file;
+        if (currentChar == -1) return States.end_of_file;
 
         if (SkipSingleLineComment() || SkipMultiLineComment()) return GetLexemState();
 
         buffer += (char)currentChar;
 
-        if (IsDelimiter((char)currentChar)) return (int)States.delimiter;
+        if (IsDelimiter((char)currentChar)) return States.delimiter;
 
-        if (IsOperationSign((char)currentChar)) return (int)States.operation_sign;
+        if (IsOperationSign((char)currentChar)) return States.operation_sign;
 
         if (IsIdentifier())
         {
-            if (IsKeyword(buffer)) return (int)States.keyword;
-            return (int)States.identifier;
+            if (IsKeyword(buffer)) return States.keyword;
+            else if (IsLogical(buffer)) return States.operation_logic;
+            else return States.identifier;
         }
 
-        if (IsString()) return (int)States.str;
+        if (IsString()) return States.str;
 
-        if ((IsBinInt() || IsOctInt() || IsHexInt()) && errorMessage == "") return (int)States.integer;
+        if ((IsBinInt() || IsOctInt() || IsHexInt()) && errorMessage == "") return States.integer;
 
         if (errorMessage == "" && IsIntOrReal() && errorMessage == "")
         {
             if (valueInt == -1)
             {
                 ReadReal();
-                if (errorMessage == "") return (int)States.real;
+                if (errorMessage == "") return States.real;
             }
-            if (errorMessage == "") return (int)States.integer;
+            if (errorMessage == "") return States.integer;
         }
 
         if (errorMessage == "") errorMessage = string.Format("({0}, {1}): Unexpected lexem.", lineCount, charCount);
-        return (int)States.error;
+        return States.error;
     }
 
     public string[] GetLexem()
     {
-        int state = GetLexemState();
-        if (state == (int)States.error) return new string[1] { errorMessage };
+        States state = GetLexemState();
+        if (state == States.error) return new string[1] { errorMessage };
         return new string[5] { lineCount.ToString(), GetCharInd().ToString(), GetLexemType(state), GetLexemValue(state), buffer};
     }
+
 
     private List<int> GetInflectionPoint(List<string> expr)
     {
         int braces = 0;
         int maxPriority = int.MaxValue, index = 0;
-        string signsStr = "+-*/";
+        string signsStr = "+-*/=";
         Dictionary<string, int> priority = new Dictionary<string, int>()
         {
-            { "+", 1 },
-            { "-", 1 },
-            { "*", 2 },
-            { "/", 2 }
+            { "=", 1 },
+            { "+", 2 },
+            { "-", 2 },
+            { "*", 3 },
+            { "/", 3 }
         };
         for (int i = 0; i < expr.Count; i++)
         {
@@ -417,14 +437,14 @@ public class Lexer
             else if (expr[i] == ")") braces--;
             else if (signsStr.Contains(expr[i]))
             {
-                if (priority[expr[i]] + 2 * braces <= maxPriority)
+                if (priority[expr[i]] + 3 * braces <= maxPriority)
                 {
-                    maxPriority = priority[expr[i]] + 2 * braces;
+                    maxPriority = priority[expr[i]] + 3 * braces;
                     index = i;
                 }
             }
         }
-        int extraBraces = (maxPriority - 1) / 2;
+        int extraBraces = (maxPriority - 1) / 3;
         return new List<int>() { index, extraBraces };
     }
 
@@ -446,15 +466,16 @@ public class Lexer
     {
         int openBraces = 0;
         List<string> expression = new List<string>();
+        bool haveEquals = false;
         bool isSignOpen = true;
         while (true)
         {
-            int state = GetLexemState();
-            if (state == (int)States.end_of_file) break;
-            if (state == (int)States.error) return errorMessage;
+            States state = GetLexemState();
+            if (state == States.end_of_file) break;
+            if (state == States.error) return errorMessage;
             string lexem = GetLexemValue(state);
-            if (state == (int)States.integer || state == (int)States.real || state == (int)States.identifier ||
-                lexem == "+" || lexem == "-" || lexem == "*" || lexem == "/" || lexem == "(" || lexem == ")")
+            if (state == States.integer || state == States.real || state == States.identifier ||
+                lexem == "+" || lexem == "-" || lexem == "*" || lexem == "/" || lexem == "(" || lexem == ")" || lexem == "=")
             {
                 expression.Add(lexem);
             }
@@ -464,7 +485,16 @@ public class Lexer
                 return errorMessage;
             }
 
-            if (lexem == "+" || lexem == "-" || lexem == "*" || lexem == "/")
+           /*
+            if (lexem == "=")
+            {
+                if (haveEquals) return errorMessage = string.Format("({0}, {1}): Too much equals", lineCount, charCount);
+                haveEquals = true;
+            }
+           */
+            
+
+            if (lexem == "+" || lexem == "-" || lexem == "*" || lexem == "/" || lexem == "=")
             {
                 if (isSignOpen)
                 {
@@ -480,17 +510,32 @@ public class Lexer
             }
             else if (lexem == ")")
             {
+                if (isSignOpen)
+                {
+                    errorMessage = string.Format("({0}, {1}): The expression doesn't have a right term.", lineCount, charCount);
+                    return errorMessage;
+                }
                 openBraces--;
+                if (openBraces < 0)
+                   return errorMessage = string.Format("({0}, {1}): The expression has extra closing braces.", lineCount, charCount);
+
                 isSignOpen = false;
             }
-            else isSignOpen = false;
+            else
+            {
+                if (!isSignOpen)
+                {
+                    errorMessage = string.Format("({0}, {1}): The expression doesn't have a operation sign.", lineCount, charCount);
+                    return errorMessage;
+                }
+                isSignOpen = false;
+            }
         }
+
         if (isSignOpen)
             errorMessage = string.Format("({0}, {1}): The expression doesn't have a right term.", lineCount, charCount);
         if (openBraces > 0)
             errorMessage = string.Format("({0}, {1}): The expression has unclosed braces.", lineCount, charCount);
-        if (openBraces < 0)
-            errorMessage = string.Format("({0}, {1}): The expression has extra closing braces.", lineCount, charCount);
         if (errorMessage != "") return errorMessage;
         return GetSimpleExpression(expression, 0);
     }
